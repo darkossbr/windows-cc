@@ -6133,7 +6133,7 @@ return function(OS)
   local app = { id = "wifi", title = "Wi-Fi", glyph = " ) ", icon = "acc", fg = "wht", single = true,
     w = 58, h = 18, minw = 50, minh = 13 }
   local CH = 4242
-  local PROTO = "win10-wifi"
+  local PROTO = "fedora-wifi"
   local myId = os.getComputerID()
   local REPLY = 10000 + (myId % 50000)
 
@@ -6381,7 +6381,7 @@ return function(OS)
   end
 
   local function onMessage(side, ch, reply, msg, dist)
-    if type(msg) ~= "table" or msg.proto ~= PROTO or msg.id == myId then return end
+    if type(msg) ~= "table" or (msg.proto ~= PROTO and msg.proto ~= "win10-wifi") or msg.id == myId then return end
     local t = msg.t
     if t == "probe" and wc.on and wc.ap.on then
       tx(reply, { t = "beacon", ssid = wc.ap.ssid, sec = wc.ap.pass ~= "" })
@@ -7449,7 +7449,7 @@ return function(OS)
     w = 58, h = 19, single = true, minw = 50, minh = 17 }
   local SLOTS = { { "acc", "Accent" }, { "dk", "Wallpaper" }, { "win", "Window" }, { "bar", "Titlebar" },
     { "desk", "Desktop" }, { "dock", "Dock" }, { "text", "Text" }, { "sub", "Dim text" } }
-  local DEFAULTS = { acc = 0x0078D7, dk = 0x1B78D6, win = 0x1F1F1F, bar = 0x2D2D2D, desk = 0x041B45,
+  local DEFAULTS = { acc = 0x0078D7, dk = 0x6FBCF7, win = 0x1F1F1F, bar = 0x2D2D2D, desk = 0x03122F,
     dock = 0x151515, text = 0xFFFFFF, sub = 0xA0A0A0 }
   local PRESETS = { 0x0078D7, 0x0063B1, 0x8E8CD8, 0x744DA9, 0xB146C2, 0xC30052, 0xE81123, 0xF7630C,
     0xFFB900, 0x10893E, 0x00B7C3, 0x2D7D9A, 0x767676, 0x4C4A48, 0xFFFFFF, 0x000000 }
@@ -7781,8 +7781,8 @@ local C = { desk = colors.black, win = colors.white, bar = colors.lightGray, tex
 OS.C = C
 
 local THEMES = {
-  { name = "Windows 10", acc = 0x0078D7, dk = 0x1B78D6, lt = 0x99C9F2, desk = 0x041B45, win = 0x1F1F1F, bar = 0x2D2D2D, dock = 0x151515, text = 0xFFFFFF, sub = 0xA0A0A0 },
-  { name = "Windows 10 Light", acc = 0x0078D7, dk = 0x3A96E8, lt = 0xCCE4F7, desk = 0x0A4FA8, win = 0xFFFFFF, bar = 0xE6E6E6, dock = 0xF2F2F2, text = 0x000000, sub = 0x5E5E5E },
+  { name = "Windows 10", acc = 0x0078D7, dk = 0x6FBCF7, lt = 0x99C9F2, desk = 0x03122F, win = 0x1F1F1F, bar = 0x2D2D2D, dock = 0x151515, text = 0xFFFFFF, sub = 0xA0A0A0 },
+  { name = "Windows 10 Light", acc = 0x0078D7, dk = 0x9AD0FA, lt = 0xCCE4F7, desk = 0x0A3E86, win = 0xFFFFFF, bar = 0xE6E6E6, dock = 0xF2F2F2, text = 0x000000, sub = 0x5E5E5E },
   { name = "Merlot",   acc = 0xB3264A, dk = 0x4A0F22, lt = 0xE8A0B4 },
   -- special theme: the accent and wallpaper tint cycle through the rainbow
   { name = "RGB", rgb = true, acc = 0xFF2040, dk = 0x1A1A24, lt = 0xFFFFFF, desk = 0x0A0A10, win = 0x15151D, bar = 0x1F1F2A, dock = 0x2A2A38, text = 0xF0F0F8, sub = 0x9A9AB0 },
@@ -8744,6 +8744,8 @@ local function wallRows()
   local rows = {}
   local bd, bw = colors.toBlit(C.desk), colors.toBlit(C.wp)
   -- Windows 10 hero picture: a glow in the middle and the four-pane logo on top
+  local ba = colors.toBlit(C.acc)
+  local ba = colors.toBlit(C.acc)
   local lg
   if cfg.wall == 1 and OS.mode == "desktop" then
     local ph = math.max(2, math.min(8, math.floor((H - 1) / 4)))
@@ -8764,6 +8766,10 @@ local function wallRows()
       elseif cfg.wall == 2 then v = ((x - 1) / math.max(1, W - 1) + (y - 1) / math.max(1, H - 1)) / 2
       elseif cfg.wall == 3 then v = 0.45 + 0.35 * math.sin(x / 6 + y / 3) + 0.2 * (y / H) end
       v = math.max(0, math.min(1, v))
+      local bd, bw = bd, bw
+      if cfg.wall == 1 then
+        if v < 0.5 then bw = ba; v = v * 2 else bd = ba; v = (v - 0.5) * 2 end
+      end
       local lv = math.floor(v * 7)
       if cfg.wall >= 4 then lv = 0 end
       if lv >= 6 then t[x] = " "; f[x] = bw; b[x] = bw
